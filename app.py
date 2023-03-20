@@ -103,7 +103,7 @@ if __name__ == '__main__':
         with tab1:
             # Show data
             st.subheader('Data from YouTube')
-            st.experimental_data_editor(df, use_container_width=True)
+            st.experimental_data_editor(csv, use_container_width=True)
 
             # Download CSV
             csv_data = to_csv(csv)
