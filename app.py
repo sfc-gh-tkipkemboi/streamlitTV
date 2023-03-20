@@ -69,8 +69,8 @@ def to_csv(df):
 
 if __name__ == '__main__':
     st.set_page_config(
-        page_title="Streamlit Content Aggregation App :tada:",
-        page_icon=":balloon:",
+        page_title="Streamlit Content Aggregation App",
+        page_icon="📺",
         layout="wide",
         initial_sidebar_state="expanded",
         menu_items={
@@ -79,7 +79,7 @@ if __name__ == '__main__':
             'About': "# This app aggregates content from social meadia based on keyword search and other filters!"
         }
     )
-    
+    st.title("Aggregated Streamlit Content 🎈")
     with st.sidebar:
         st.image('streamlit-logo.png')
         # Create a form
