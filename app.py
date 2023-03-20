@@ -68,7 +68,18 @@ def to_csv(df):
 
 
 if __name__ == '__main__':
-    st.title('Streamlit Content on YouTube:balloon:')
+    st.set_page_config(
+        page_title="Streamlit Content Aggregation App :tada:",
+        page_icon=":balloon:",
+        layout="wide",
+        initial_sidebar_state="expanded",
+        menu_items={
+            'Get Help': 'tony.kipkemboi@snowflake.com',
+            'Report a bug': "tony.kipkemboi@snowflake.com",
+            'About': "# This app aggregates content from social meadia based on keyword search and other filters!"
+        }
+    )
+    
     with st.sidebar:
         st.image('streamlit-logo.png')
         # Create a form
