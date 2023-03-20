@@ -67,10 +67,6 @@ def to_csv(df):
     return df.to_csv().encode('utf-8')
 
 
-def make_clickable(val):
-    return '<a href="{}" target="_blank">{}</a>'.format(val, val)
-
-
 if __name__ == '__main__':
     st.title('Streamlit Content on YouTube:balloon:')
     with st.sidebar:
@@ -107,10 +103,7 @@ if __name__ == '__main__':
         with tab1:
             # Show data
             st.subheader('Data from YouTube')
-            # Apply the formatting function to the 'url' column
-            csv['video_url'] = csv['video_url'].apply(make_clickable)
-            csv['channel_url'] = csv['channel_url'].apply(make_clickable)
-            st.write(csv, unsafe_allow_html=True)
+            st.experimental_data_editor(df, use_container_width=True)
 
             # Download CSV
             csv_data = to_csv(csv)
