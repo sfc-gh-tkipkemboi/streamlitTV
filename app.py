@@ -101,7 +101,6 @@ if __name__ == '__main__':
 
         raw_data = get_videos(query, max_results, order,
                               start_date_iso, end_date_iso)
-        raw_data
         df, csv = data_to_df(raw_data)
 
         tab1, tab2 = st.tabs(['Data', 'Videos'])
