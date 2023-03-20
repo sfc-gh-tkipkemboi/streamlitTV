@@ -74,8 +74,8 @@ if __name__ == '__main__':
         layout="wide",
         initial_sidebar_state="expanded",
         menu_items={
-            'Get Help': 'tony.kipkemboi@snowflake.com',
-            'Report a bug': "tony.kipkemboi@snowflake.com",
+            'Get Help': 'mailto:tony.kipkemboi@snowflake.com',
+            'Report a bug': "mailto:tony.kipkemboi@snowflake.com",
             'About': "# This app aggregates content from social meadia based on keyword search and other filters!"
         }
     )
