@@ -70,6 +70,14 @@ def data_to_df(data: dict) -> pd.DataFrame:
               'description', 'channel_name', 'channel_url']]
     return df, csv
 
+def create_bar_chart(df: pd.DataFrame):
+    
+    df['publish_date'] = pd.to_datetime(df['publish_date']).dt.date
+    uploads_per_day = df.groupby('publish_date')['video_id'].count().reset_index()
+    uploads_per_day.columns = ['Date', 'Uploads']
+    st.subheader('Uploads per Day')
+    st.bar_chart(uploads_per_day.set_index('Date'))
+
 
 def to_csv(df):
     return df.to_csv().encode('utf-8')
@@ -123,7 +131,10 @@ if __name__ == '__main__':
             # Show data
             st.subheader('Data from YouTube')
             st.experimental_data_editor(csv, use_container_width=True)
-
+            
+            # Uploads per day
+            create_bar_chart(df)
+            
             # Download CSV
             csv_data = to_csv(csv)
             st.download_button(
