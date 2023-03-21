@@ -1,4 +1,5 @@
 import requests
+import pytz
 import pandas as pd
 import streamlit as st
 import datetime as dt
@@ -72,10 +73,11 @@ def data_to_df(data: dict) -> pd.DataFrame:
 
 def create_bar_chart(df: pd.DataFrame):
     
-    df['publish_date'] = pd.to_datetime(df['publish_date']).dt.date
-    uploads_per_day = df.groupby('publish_date')['video_id'].count().reset_index()
+    df['publish_date'] = pd.to_datetime(df['publish_date'], utc=True)
+    df['publish_date'] = df['publish_date'].dt.tz_convert('US/Eastern')
+    uploads_per_day = df.groupby(pd.Grouper(key='publish_date', freq='D'))['video_id'].count().reset_index()
     uploads_per_day.columns = ['Date', 'Uploads']
-    st.subheader('Uploads per Day')
+    st.subheader('Uploads per Day (EDT Timezone)')
     st.bar_chart(uploads_per_day.set_index('Date'))
 
 
