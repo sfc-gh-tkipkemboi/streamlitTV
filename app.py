@@ -72,6 +72,15 @@ def data_to_df(data: dict) -> pd.DataFrame:
     return df, csv
 
 def create_bar_chart(df: pd.DataFrame):
+    """
+    Create a bar chart showing the number of video uploads per day (in EDT timezone) and display the total number of videos uploaded.
+    
+    Parameters:
+    df (pd.DataFrame): A DataFrame containing video data, including the 'publish_date' column.
+    
+    Returns:
+    None
+    """
     
     df['publish_date'] = pd.to_datetime(df['publish_date'], utc=True)
     df['publish_date'] = df['publish_date'].dt.tz_convert('US/Eastern')
