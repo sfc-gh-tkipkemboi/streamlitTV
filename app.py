@@ -75,11 +75,17 @@ def create_bar_chart(df: pd.DataFrame):
     
     df['publish_date'] = pd.to_datetime(df['publish_date'], utc=True)
     df['publish_date'] = df['publish_date'].dt.tz_convert('US/Eastern')
+    
     uploads_per_day = df.groupby(pd.Grouper(key='publish_date', freq='D'))['video_id'].count().reset_index()
     uploads_per_day.columns = ['Date', 'Uploads']
+    total_uploads = uploads_per_day['Uploads'].sum()
+    
     st.subheader('Uploads per Day (EDT Timezone)')
     st.bar_chart(uploads_per_day.set_index('Date'))
-
+   
+    uploads_per_day['Daily Difference'] = uploads_per_day['Uploads'].diff().fillna(0)
+    st.metric(label="Total Videos Uploaded", value=int(total_uploads), delta=None)
+    
 
 def to_csv(df):
     return df.to_csv().encode('utf-8')
