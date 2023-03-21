@@ -7,14 +7,12 @@ import datetime as dt
 def get_videos(query: str, max_results: int, order: str, published_after: str, published_before: str) -> dict:
     """
     Get a list of videos from the YouTube Data API.
-
     Parameters:
         - query: The search query to use
         - max_results: The maximum number of results to return
         - order: The order in which to return the results
         - published_after: The start date for the search period (in ISO 8601 format)
         - published_before: The end date for the search period (in ISO 8601 format)
-
     Returns:
         A dictionary containing the raw video data
     """
@@ -29,9 +27,19 @@ def get_videos(query: str, max_results: int, order: str, published_after: str, p
         "publishedAfter": published_after,
         "publishedBefore": published_before
     }
-    response = requests.get(URL, params=PARAMS)
-    data = response.json()
-    return data
+
+    all_data = []
+    while True:
+        response = requests.get(URL, params=PARAMS)
+        data = response.json()
+        all_data.extend(data['items'])
+        
+        if 'nextPageToken' in data:
+            PARAMS['pageToken'] = data['nextPageToken']
+        else:
+            break
+
+    return {"items": all_data}
 
 
 def data_to_df(data: dict) -> pd.DataFrame:
