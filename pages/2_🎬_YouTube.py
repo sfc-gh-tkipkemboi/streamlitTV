@@ -1,9 +1,10 @@
 import requests
-import pytz
 import pandas as pd
 import streamlit as st
 import datetime as dt
-# from api import API_KEY
+from utils.color_header_util import colored_header
+from utils.metrics_card_utils import style_metric_cards
+from utils.emoji_rain_util import rain
 
 URL = "https://www.googleapis.com/youtube/v3/search"
 
@@ -35,6 +36,32 @@ def get_videos(query: str, max_results: int, order: str, published_after: str, p
     while True:
         response = requests.get(URL, params=params)
         data = response.json()
+
+        # Check for errors in the API response
+        if 'error' in data:
+            error_message = data['error']['message']
+            error_code = data['error']['code']
+            
+            # Invalid API key
+            if 'API key not valid' in error_message:
+                st.error("The provided API key is not valid. Please check your API key or reach out to Tony Kipkemboi 🤓")
+                return {"items": []}
+            
+            # Rate limit exceeded
+            elif error_code == 403 and 'quota' in error_message:
+                st.error("API rate limit exceeded. Please wait and try again tomorrow 😭")
+                return {"items": []}
+            
+            # Network issues or unavailable API
+            elif error_code == 503:
+                st.error("The API is temporarily unavailable. Please try again later 🙁")
+                return {"items": []}
+
+            # Generic error message for other cases
+            else:
+                st.error(f"An error occurred while fetching videos 🫤: {error_message}")
+                return {"items": []}
+            
         all_data.extend(data['items'])
         if 'nextPageToken' in data:
             params['pageToken'] = data['nextPageToken']
@@ -53,6 +80,11 @@ def data_to_df(data: dict) -> pd.DataFrame:
             tuple: A tuple containing the original DataFrame and a CSV-formatted DataFrame.
         """
         df = pd.json_normalize(data['items'])
+
+        # Check if 'video_id' column exists in the dataframe
+        if 'id.videoId' not in df.columns:
+            st.error("🚨 No videos were found for the specified date range.")
+            return None, None
 
         # Rename columns and add video and channel URLs
         df = df.rename(columns={
@@ -85,72 +117,41 @@ def create_bar_chart(df: pd.DataFrame):
     total_uploads = uploads_per_day['Uploads'].sum()
 
     uploads_per_day['Daily Difference'] = uploads_per_day['Uploads'].diff().fillna(0)
-    st.metric(label="Total", value=int(total_uploads), delta=None)
+    col1,_,_ = st.columns(3)
+    col1.metric(label="Total Video Uploads", value=int(total_uploads), delta=None)
+    style_metric_cards()
 
     st.subheader('Uploads per Day (EDT Timezone)')
     st.bar_chart(uploads_per_day.set_index('Date'))
 
 
-def to_csv(df):
-    return df.to_csv().encode('utf-8')
-
-
 def search_form():
     with st.sidebar:
-        st.image('streamlit-logo.png')
+        st.title(':wave: :red[Start here] 👇',)
         with st.form("search_form"):
             query = st.text_input('Enter Query', value="'Streamlit'",
                                   help="Use single quotes around your query to get results with exact term i.e. 'streamlit' ")
             max_results = st.number_input("Max Results", value=50, min_value=5, max_value=50, help="Max is 50 and default is 5")
             order = st.selectbox("Order by video", ["date", "rating", "relevance", "title", "videoCount", "viewCount"])
 
+            # Get today's date
+            today = dt.datetime.now().date()
+            
             start, end = st.columns(2)
             with start:
-                start_date = st.date_input("Start Date", value=dt.date(2023, 1, 1))
+                start_date = st.date_input("Start Date", value=dt.date(2023, 1, 1), max_value=today)
             with end:
-                end_date = st.date_input("End Date")
+                end_date = st.date_input("End Date", max_value=today)
 
-            # Add a submit button to the form
+            # Validate the date range
+            if start_date > end_date:
+                st.error("Invalid date range. Please ensure the start date is earlier than the end date.")
+                return None, None, None, None, None, None 
+
             return st.form_submit_button("Submit"), query, max_results, order, start_date, end_date
-
-def display_videos_with_pagination(df, page, videos_per_page):
-    """Display videos with pagination.
-
-    Args:
-        df (pd.DataFrame): A DataFrame containing video data.
-        page (int): The current page number.
-        videos_per_page (int): The number of videos to display per page.
-    """
-    start_index = (page - 1) * videos_per_page
-    end_index = start_index + videos_per_page
-    videos_to_display = df.iloc[start_index:end_index]
-
-    for _, row in videos_to_display.iterrows():
-        with st.container():
-            st.video(row['video_url'])
-            st.header('Metadata')
-            st.write('CREATOR: ', row['channel_name'])
-            st.write('PUBLISH DATE: ', row['publish_date'])
-
-    # Display buttons for pagination
-    total_pages = (len(df) + videos_per_page - 1) // videos_per_page
-    col1, col2, col3 = st.columns(3)
-    if page > 1:
-        if col1.button("Previous"):
-            update_page(page - 1)
-    col2.write(f"Page {page} of {total_pages}")
-    if page < total_pages:
-        if col3.button("Next"):
-            update_page(page + 1)
-
-def update_page(new_page):
-    """Update the page number in the URL and rerun the app.
-
-    Args:
-        new_page (int): The new page number.
-    """
-    st.experimental_set_query_params(page=new_page)
-    st.experimental_rerun()
+        
+def to_csv(df):
+    return df.to_csv().encode('utf-8')
 
 if __name__ == '__main__':
     st.set_page_config(
@@ -164,54 +165,57 @@ if __name__ == '__main__':
             'About': "# This app aggregates content from social media based on keyword search and other filters!"
         }
     )
-    st.title("Aggregated Streamlit Content 🎈")
 
-    videos_per_page = 5  # Number of videos to display per page
-        
-    page = int(st.experimental_get_query_params().get("page", [1])[0])
-
-    # Initialize session state variables for form submission and data
-    if "submitted" not in st.session_state:
-        st.session_state.submitted = False
-    if "df" not in st.session_state:
-        st.session_state.df = None
+    colored_header(
+        label="# Aggregate Streamlit Content 🎈",
+        description="Modify search query as needed i.e. 'streamlit gpt'"
+    )
 
     submitted, query, max_results, order, start_date, end_date = search_form()
 
     if submitted:
-        st.session_state.submitted = True
-
+        rain(
+            emoji="🍄",
+            font_size=54,
+            falling_speed=5,
+            animation_length="1",
+        )
         # Format dates as ISO 8601 strings
         start_date_iso = start_date.isoformat() + "T00:00:00Z"
         end_date_iso = end_date.isoformat() + "T23:59:59Z"
 
-        raw_data = get_videos(query, max_results, order, start_date_iso, end_date_iso)
-        df, csv = data_to_df(raw_data)
+        with st.spinner("Fetching data from YouTube API..."):
+            raw_data = get_videos(query, max_results, order, start_date_iso, end_date_iso)
+        
+        with st.spinner("Processing data..."):
+            df, csv = data_to_df(raw_data)
 
-        # Store the dataframe in session state
-        st.session_state.df = df
+        if df is not None and csv is not None:
+            tab1, tab2 = st.tabs(['Data', 'Videos'])
+            with tab1:
+                # Uploads per day
+                create_bar_chart(df)
 
-        tab1, tab2 = st.tabs(['Data', 'Videos'])
-        with tab1:
-            st.session_state.submitted = True
-            # Uploads per day
-            create_bar_chart(df)
+                # Show data
+                st.subheader('Data from YouTube')
+                st.experimental_data_editor(csv, use_container_width=True)
 
-            # Show data
-            st.subheader('Data from YouTube')
-            st.experimental_data_editor(csv, use_container_width=True)
-
-            # Download CSV
-            csv_data = to_csv(csv)
-            st.download_button(
-                label="Download data as CSV",
-                data=csv_data,
-                file_name='content_data.csv',
-                mime='text/csv'
-            )
-        if st.session_state.submitted or st.session_state.df is not None:
+                # Download CSV
+                csv_data = to_csv(csv)
+                st.download_button(
+                    label="Download data as CSV",
+                    data=csv_data,
+                    file_name='yt_content_data.csv',
+                    mime='text/csv',
+                )
+        
             with tab2:
-                # Display videos with pagination
-                display_videos_with_pagination(st.session_state.df, page, videos_per_page)
+                for i, row in df.iterrows():
+                    with st.container():
+                        st.video(row['video_url'])
+                        st.subheader('Metadata')
+                        st.write('CREATOR: ', row['channel_name'])
+                        st.write('PUBLISH DATE: ', row['publish_date'])
+            
 
 

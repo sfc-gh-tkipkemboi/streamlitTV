@@ -3,8 +3,8 @@ from utils.color_header_util import colored_header
 
 if __name__ == '__main__':
     st.set_page_config(
-        page_title="Twitter Content",
-        page_icon="🐦",
+        page_title="Medium Content",
+        page_icon="📝",
         layout="wide",
         initial_sidebar_state="expanded",
         menu_items={
@@ -17,6 +17,7 @@ if __name__ == '__main__':
     colored_header(
         label="# Aggregate Streamlit Content 🎈",
         description="Maybe we can use CommonRoom instead of re-inventing the wheel here 😅"
-    )
+    ) 
+
     st.title("🚧")
-    st.info('💡 Site under construction')
+    st.info('''💡 Medium does not have an official API for searching articles by keyword.''')

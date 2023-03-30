@@ -3,8 +3,8 @@ from utils.color_header_util import colored_header
 
 if __name__ == '__main__':
     st.set_page_config(
-        page_title="Twitter Content",
-        page_icon="🐦",
+        page_title="LinkedIn Content",
+        page_icon="🤓",
         layout="wide",
         initial_sidebar_state="expanded",
         menu_items={
@@ -18,5 +18,7 @@ if __name__ == '__main__':
         label="# Aggregate Streamlit Content 🎈",
         description="Maybe we can use CommonRoom instead of re-inventing the wheel here 😅"
     )
+
     st.title("🚧")
-    st.info('💡 Site under construction')
+    st.info('''💡 LinkedIn has a strict API access policy, and it\'s not possible to search for posts by keyword. 
+    I may consider to use alternative methods like web scraping to get this data, but also aware that this may violate LinkedIn\'s terms of service.''')
