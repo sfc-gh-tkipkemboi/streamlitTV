@@ -1,5 +1,4 @@
 import streamlit as st
-from streamlit_extras.mention import mention
 from utils.color_header_util import colored_header
 from utils.emoji_rain_util import rain
 
@@ -37,11 +36,7 @@ To get started, simply navigate to the desired social media platform using the s
 Happy browsing and Streamlit-ing! 🎈
 """)
 st.write('---')
-mention(
-    label="Google Doc",
-    icon="📑", 
-    url="https://docs.google.com/spreadsheets/d/1BXJb67S0VLekDKiTLn04rL1mKclIZiKXhCIDE33F4Q4/edit#gid=704013770",
-)
+st.write("📑 [Google Doc](https://docs.google.com/spreadsheets/d/1BXJb67S0VLekDKiTLn04rL1mKclIZiKXhCIDE33F4Q4/edit#gid=704013770)")
 rain(
     emoji="🎈",
     font_size=54,
