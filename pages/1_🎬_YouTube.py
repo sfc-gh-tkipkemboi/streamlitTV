@@ -22,7 +22,7 @@ def get_videos(query: str, max_results: int, order: str, published_after: str, p
         dict: A dictionary containing the raw video data.
     """
     params = {
-        "key": st.secrets.yt_api.API_KEY
+        "key": st.secrets.yt_api.API_KEY,
         "q": query,
         "part": "snippet",
         "type": "video",
