@@ -131,3 +131,4 @@ dmypy.json
 
 # Secret Files
 api.py
+secrets.toml
